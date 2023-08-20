@@ -10,28 +10,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EmployeeController extends Controller
 {
-    private $limit = 8;
-    private $offset = 0;
-
     public function index(Request $req)
     {
         $param = array(
             'name'  => $req->input('name'),
         );
 
-        if ($req->input('limit')) {
-            $this->limit = $req->input('limit');
-        }
-
-        if ($req->input('offset')) {
-            $this->offset = $req->input('offset');
-        }
-
-        $rst                = Employee::getAllEmployee($param, $this->limit, $this->offset);
-
-        $rst['active_employee']      = Employee::where('status', Employee::STATUS_ACTIVE)->whereNull('deleted_at')->count();
-        $rst['inactive_employee']    = Employee::where('status', Employee::STATUS_INACTIVE)->whereNull('deleted_at')->count();
-        $rst['total_employee']       = Employee::whereNull('deleted_at')->count();
+        $rst    = Employee::getAllEmployee($param);
 
         return ApiModel::resultSuccess($rst);
     }

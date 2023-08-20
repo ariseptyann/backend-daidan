@@ -25,7 +25,7 @@ class Employee extends Model
         return $this->belongsTo(Departement::class, 'departement_id')->whereNull('deleted_at');
     }
 
-    public static function getAllEmployee($param, $limit = 10, $offset = 0) {
+    public static function getAllEmployee($param) {
         $query = self::with(['company' => function($query){
             return $query->select('id', 'code', 'name');
         }, 'departement' => function($query){
@@ -36,16 +36,11 @@ class Employee extends Model
             $query->where('name', $param['name']);
         }
 
-        $queryCount     = $query;
-        $total_number   = $queryCount->count();
-        $skip           = $offset * $limit;
-
         $rst = array(
-            'list'          => $query->offset($skip)->limit($limit)->get(),
-            'limit'         => $limit,
-            'offset'        => $offset,
-            'total_number'  => $total_number,
-            'total_page'    => ceil($total_number / $limit),
+            'list'              => $query->paginate(10),
+            'active_employee'   => Employee::where('status', Employee::STATUS_ACTIVE)->whereNull('deleted_at')->count(),
+            'inactive_employee' => Employee::where('status', Employee::STATUS_INACTIVE)->whereNull('deleted_at')->count(),
+            'total_employee'    => Employee::whereNull('deleted_at')->count()
         );
 
         return $rst;
